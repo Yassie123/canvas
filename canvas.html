@@ -4,21 +4,27 @@
     <meta charset="UTF-8" />
     <script defer type="module" src="./src/main.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Artifika&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <title>Gallery</title>
   </head>
   <body>
-    <div class="container">
-        <h1>Create Your Artwork</h1>
+    <div class="containercanvas">
+        <h1>Maak je eigen kunstwerk</h1>
         <div id="controls">
             <input type="color" id="color-picker" value="#000000">
-            <label>Brush Size:</label>
-            <input type="range" id="brush-size" min="1" max="50" value="5">
-            <button id="clear-btn" class="btn">Clear Canvas</button>
-            <button id="save-btn" class="btn">Save Artwork</button>
+            <label class="brush-size">Borstel grootte:</label>
+            <input type="range" id="brush-size-slider" min="1" max="50" value="5">
+            <button id="clear-btn" class="btn">Verwijder tekening</button>
+            <button id="save-btn" class="btn">Bewaar kunstwerk</button>
         </div>
-        <canvas id="mural-canvas" width="800" height="600"></canvas>
+        <div class="mural">
+          <canvas id="mural-canvas" width="800" height="600"></canvas>
+
+        </div>
         <div>
-            <a href="gallery.html" class="btn">Back to Gallery</a>
+            <a href="gallery.html" class="btn">Terug naar de gallerij</a>
         </div>
     </div>
 
