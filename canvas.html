@@ -10,9 +10,18 @@
     <title>Gallery</title>
   </head>
   <body>
+  
     <div class="containercanvas">
         <h1>Maak je eigen kunstwerk</h1>
         <div id="controls">
+      
+        <select id="brush-type-select">
+          <option value="pencil">Potlood</option>
+          <option value="marker">Marker</option>
+          <option value="sprayPaint">Spray Paint</option>
+          <option value="calligraphyBrush">Calligraphy Brush</option>
+          <option value="eraser">Gom</option>
+      </select>
             <input type="color" id="color-picker" value="#000000">
             <label class="brush-size">Borstel grootte:</label>
             <input type="range" id="brush-size-slider" min="1" max="50" value="5">

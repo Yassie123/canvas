@@ -7,11 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas ? canvas.getContext('2d') : null;
     const colorPicker = document.getElementById('color-picker');
     const brushSizeSlider = document.getElementById('brush-size-slider');
+    const brushTypeSelect = document.getElementById('brush-type-select');
     const clearBtn = document.getElementById('clear-btn');
     const saveBtn = document.getElementById('save-btn');
 
     // Check if all required elements exist
-    if (!canvas || !ctx || !colorPicker || !brushSizeSlider || !clearBtn || !saveBtn) {
+    if (!canvas || !ctx || !colorPicker || !brushSizeSlider || !brushTypeSelect || !clearBtn || !saveBtn) {
         console.error('One or more required elements are missing');
         return;
     }
@@ -24,7 +25,67 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastX = 0;
     let lastY = 0;
 
-    // Improved drawing function with more accurate positioning
+    // Brush types with custom drawing methods
+    const brushTypes = {
+        pencil: (ctx, x, y, lastX, lastY, color, size) => {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+        },
+        marker: (ctx, x, y, lastX, lastY, color, size) => {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size * 2;
+            ctx.lineCap = 'square';
+            ctx.lineJoin = 'miter';
+            ctx.globalAlpha = 0.5;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        },
+        sprayPaint: (ctx, x, y, lastX, lastY, color, size) => {
+            const density = size * 2;
+            for (let i = 0; i < density; i++) {
+                const offsetX = (Math.random() - 0.5) * size * 2;
+                const offsetY = (Math.random() - 0.5) * size * 2;
+                ctx.beginPath();
+                ctx.arc(x + offsetX, y + offsetY, Math.random() * (size / 4), 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        },
+        calligraphyBrush: (ctx, x, y, lastX, lastY, color, size) => {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size * 2;
+            ctx.lineCap = 'butt';
+            ctx.lineJoin = 'miter';
+            ctx.setLineDash([size, size / 2]); // Creates a dashed line effect
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset line dash
+        },
+        eraser: (ctx, x, y, lastX, lastY, color, size) => {
+            // Erase by drawing with a white background color
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = '#ffff'; // Match the background color
+            ctx.lineWidth = size * 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+        }
+    };
+
+    // Improved drawing function with brush type support
     function draw(e) {
         if (!isDrawing) return;
 
@@ -39,14 +100,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const x = (e.clientX - rect.left) * scaleX;
         const y = (e.clientY - rect.top) * scaleY;
 
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = colorPicker.value;
-        ctx.lineWidth = brushSizeSlider.value;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke();
+        // Get current brush type
+        const currentBrushType = brushTypeSelect.value;
+        const brushFunction = brushTypes[currentBrushType] || brushTypes.pencil;
+
+        // Draw using selected brush type
+        brushFunction(
+            ctx, 
+            x, 
+            y, 
+            lastX, 
+            lastY, 
+            colorPicker.value, 
+            Number(brushSizeSlider.value)
+        );
 
         [lastX, lastY] = [x, y];
     }
@@ -90,14 +157,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const x = (touch.clientX - rect.left) * scaleX;
         const y = (touch.clientY - rect.top) * scaleY;
 
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = colorPicker.value;
-        ctx.lineWidth = brushSizeSlider.value;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke();
+        // Get current brush type
+        const currentBrushType = brushTypeSelect.value;
+        const brushFunction = brushTypes[currentBrushType] || brushTypes.pencil;
+
+        // Draw using selected brush type
+        brushFunction(
+            ctx, 
+            x, 
+            y, 
+            lastX, 
+            lastY, 
+            colorPicker.value, 
+            Number(brushSizeSlider.value)
+        );
 
         [lastX, lastY] = [x, y];
     }, { passive: false });
@@ -136,7 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'gallery.html';
     });
 });
-// Artwork Loading Function
+
+// Artwork Loading Function remains the same as in the previous code
 document.addEventListener('DOMContentLoaded', () => {
     function loadArtworks() {
         const artworkContainer = document.getElementById('artwork-container');
