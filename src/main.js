@@ -11,6 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearBtn = document.getElementById('clear-btn');
     const saveBtn = document.getElementById('save-btn');
 
+//fotobrush
+const photoUploadInput = document.createElement('input');
+photoUploadInput.type = 'file';
+photoUploadInput.id = 'photo-upload';
+photoUploadInput.accept = 'image/*';
+photoUploadInput.style.display = 'none';
+
+const photoUploadLabel = document.createElement('label');
+    photoUploadLabel.htmlFor = 'photo-upload';
+    photoUploadLabel.classList.add('btn');
+    photoUploadLabel.textContent = 'Upload Photo for Brush';
+
+    const controlsContainer = document.querySelector('.controls-container');
+    if (controlsContainer) {
+        controlsContainer.appendChild(photoUploadInput);
+        controlsContainer.appendChild(photoUploadLabel);
+    } 
+    let photoBrushImage = null;
+
     // Check if all required elements exist
     if (!canvas || !ctx || !colorPicker || !brushSizeSlider || !brushTypeSelect || !clearBtn || !saveBtn) {
         console.error('One or more required elements are missing');
@@ -82,9 +101,87 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.stroke();
+        },
+        photoBrush: (ctx, x, y, lastX, lastY, color, size) => {
+            // If no photo is uploaded, show an alert and revert to pencil
+            if (!photoBrushImage) {
+                alert('Please upload a photo first to use the Photo Brush');
+                brushTypeSelect.value = 'pencil';
+                return;
+            }
+            
+            // Calculate distance between current and last point
+            const dx = x - lastX;
+            const dy = y - lastY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Determine spacing based on brush size
+            const spacing = size / 2;
+            
+            // If distance is very small, just draw one stamp
+            if (distance < spacing) {
+                const stampSize = size * 2;
+                ctx.globalAlpha = 0.7; // Slightly transparent
+                ctx.drawImage(
+                    photoBrushImage, 
+                    x - stampSize/2, 
+                    y - stampSize/2, 
+                    stampSize, 
+                    stampSize
+                );
+                ctx.globalAlpha = 1;
+                return;
+            }
+            
+            // Draw multiple stamps along the line for smooth drawing
+            const steps = Math.floor(distance / spacing);
+            for (let i = 0; i <= steps; i++) {
+                const t = steps === 0 ? 0 : i / steps;
+                const stampX = lastX + dx * t;
+                const stampY = lastY + dy * t;
+                const stampSize = size * 2;
+                
+                ctx.globalAlpha = 0.7; // Slightly transparent
+                ctx.drawImage(
+                    photoBrushImage, 
+                    stampX - stampSize/2, 
+                    stampY - stampSize/2, 
+                    stampSize, 
+                    stampSize
+                );
+                ctx.globalAlpha = 1;
+            }
         }
     };
-
+ const photoBrushOption = document.createElement('option');
+    photoBrushOption.value = 'photoBrush';
+    photoBrushOption.textContent = 'Photo Brush';
+    brushTypeSelect.appendChild(photoBrushOption);
+    
+    // Handle photo upload
+    photoUploadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // Check if the file is an image
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        // Create image from the uploaded file
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            photoBrushImage = new Image();
+            photoBrushImage.onload = () => {
+                // Auto-select photo brush when image is uploaded
+                brushTypeSelect.value = 'photoBrush';
+                alert('Photo loaded! You can now draw with it using the Photo Brush');
+            };
+            photoBrushImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
     // Improved drawing function with brush type support
     function draw(e) {
         if (!isDrawing) return;
