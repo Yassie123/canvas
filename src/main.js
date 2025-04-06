@@ -21,13 +21,13 @@ photoUploadInput.style.display = 'none';
 const photoUploadLabel = document.createElement('label');
     photoUploadLabel.htmlFor = 'photo-upload';
     photoUploadLabel.classList.add('btn');
-    photoUploadLabel.textContent = 'Upload Photo for Brush';
+    photoUploadLabel.textContent = 'Upload een foto voor de photobrush';
 
-    const controlsContainer = document.querySelector('.controls-container');
+    const controlsContainer = document.getElementById('uploadphoto');
     if (controlsContainer) {
         controlsContainer.appendChild(photoUploadInput);
         controlsContainer.appendChild(photoUploadLabel);
-    } 
+    }
     let photoBrushImage = null;
 
     // Check if all required elements exist
